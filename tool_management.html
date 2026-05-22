@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tool Management – Tool Room</title>
+  <link rel="icon" type="image/png" href="ptaldzama_logo.jpg">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --bg:      #0f1117;
+      --surface: #1a1d27;
+      --card:    #22263a;
+      --border:  #2e3350;
+      --accent:  #4f8ef7;
+      --accent2: #7c3aed;
+      --green:   #22c55e;
+      --yellow:  #f59e0b;
+      --red:     #ef4444;
+      --text:    #e8eaf6;
+      --muted:   #7b82a8;
+      --radius:  12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header img { height: 38px; }
+    header h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    header h1 span { color: var(--accent); }
+    .nav-link {
+      margin-left: auto;
+      padding: 8px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .nav-link:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* WRAPPER */
+    .wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* TAB NAV */
+    .tab-nav {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { background: var(--card); color: var(--text); }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* TAB CONTENT */
+    .tab-content { display: none; }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 16px;
+    }
+    .card h3 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* FORM */
+    .form-group { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+    .required { color: var(--red); }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,142,247,0.1);
+    }
+    input[readonly] { opacity: 0.5; cursor: not-allowed; }
+    textarea { resize: vertical; min-height: 80px; }
+    select option { background: var(--card); }
+
+    /* INFO HINT */
+    .hint {
+      margin-top: 6px;
+      padding: 8px 12px;
+      background: var(--card);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .hint strong { color: var(--accent); }
+
+    /* INFO BOX */
+    .info-box {
+      background: rgba(245,158,11,0.08);
+      border-left: 3px solid var(--yellow);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--yellow);
+      margin-bottom: 20px;
+    }
+    .info-box strong { display: block; margin-bottom: 4px; color: var(--yellow); }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .btn:hover   { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active  { transform: translateY(0); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-primary { background: var(--accent);  color: #fff; }
+    .btn-blue    { background: #0d6efd;        color: #fff; }
+    .btn-ghost   { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+
+    /* SCANNER */
+    #reader { width: 100%; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 12px; }
+    #reader video { border-radius: 8px; }
+    .scan-result {
+      padding: 10px 14px;
+      background: var(--card);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .scan-result.ok { border-left-color: var(--green); color: var(--green); }
+
+    /* TOOL INFO BOX */
+    .tool-info {
+      background: rgba(79,142,247,0.07);
+      border: 1px solid rgba(79,142,247,0.25);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 14px;
+      display: none;
+    }
+    .tool-info h4 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .tool-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .tool-info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tool-info-label { color: var(--muted); }
+    .tool-info-value { font-weight: 600; color: var(--text); }
+    .stok-display {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-align: center;
+      padding: 16px;
+      background: var(--card);
+      border-radius: 8px;
+      margin: 14px 0 0;
+      font-family: 'Rajdhani', sans-serif;
+    }
+    .stok-display span { font-size: 0.9rem; color: var(--muted); font-weight: 500; display: block; }
+
+    /* ADJUSTMENT TYPE BUTTONS */
+    .adj-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .adj-btn {
+      padding: 14px;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+    .adj-btn:hover { border-color: var(--accent); color: var(--text); }
+    .adj-btn small { display: block; font-size: 11px; margin-top: 3px; font-weight: 400; }
+    .adj-btn.add.active    { border-color: var(--green); background: rgba(34,197,94,0.12); color: var(--green); }
+    .adj-btn.subtract.active { border-color: var(--red); background: rgba(239,68,68,0.12); color: var(--red); }
+
+    /* QUANTITY */
+    .qty-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .qty-btn {
+      width: 42px;
+      height: 42px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+    #jumlah_adj { text-align: center; font-size: 18px; font-weight: 700; }
+
+    /* ALERT */
+    .alert {
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 16px;
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+    .alert-success {
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: var(--green);
+    }
+    .alert-error {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: var(--red);
+    }
+    .alert a { color: inherit; font-weight: 700; }
+
+    /* LOADING */
+    .loading-text {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      padding: 8px;
+      display: none;
+    }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 999;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 600px) {
+      .wrapper { padding: 12px; }
+      .tool-info-grid { grid-template-columns: 1fr; }
+      .tab-btn { font-size: 12px; padding: 10px 6px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="ptaldzama_logo.png" alt="Logo" onerror="this.src='ptaldzama_logo.jpg'">
+  <h1>Tool <span>Management</span></h1>
+</header>
+
+<div class="wrapper">
+
+  <!-- TAB NAV -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('register')">➕ Registrasi Tool Baru</button>
+    <button class="tab-btn"        onclick="switchTab('adjustment')">📦 Adjustment Stok</button>
+  </div>
+
+  <!-- ══════════ TAB REGISTRASI ══════════ -->
+  <div id="tab-register" class="tab-content active">
+
+    <div class="info-box">
+      <strong>📋 Petunjuk Registrasi</strong>
+      Isi semua field yang ditandai (*). Setelah registrasi, generate QR Code untuk tool baru.
+    </div>
+
+    <div class="card">
+      <h3>🏷️ Data Tool Baru</h3>
+
+      <div class="form-group">
+        <label>Tool ID <span class="required">*</span></label>
+        <input type="text" id="tool_id_reg" placeholder="Contoh: TOOL011"
+          pattern="TOOL[0-9]{3,}" title="Format: TOOL + minimal 3 angka" required />
+        <div class="hint" id="suggestId"><strong>💡</strong> Loading...</div>
+      </div>
+
+      <div class="form-group">
+        <label>Nama Tool <span class="required">*</span></label>
+        <input type="text" id="nama_tool" placeholder="Contoh: Palu Besi 500gr" maxlength="100" required />
+      </div>
+
+      <div class="form-group">
+        <label>Stok Awal <span class="required">*</span></label>
+        <input type="number" id="stok" placeholder="Contoh: 5" min="0" max="9999" required />
+      </div>
+
+      <div class="form-group">
+        <label>Lokasi Rak <span class="required">*</span></label>
+        <input type="text" id="lokasi" placeholder="Contoh: Rak A3" maxlength="100" required />
+      </div>
+
+      <div class="form-group">
+        <label>Kategori <span class="required">*</span></label>
+        <select id="kategori" required>
+          <option value="">-- Pilih Kategori --</option>
+          <option value="Hand Tools">Hand Tools</option>
+          <option value="Power Tools">Power Tools</option>
+          <option value="Electrical Tools">Electrical Tools</option>
+          <option value="Electrical Parts">Electrical Parts</option>
+          <option value="Measuring Tools">Measuring Tools</option>
+          <option value="Sleeve & Hose">Sleeve &amp; Hose</option>
+          <option value="Fasteners">Fasteners</option>
+          <option value="Filter & Spare Parts">Filter &amp; Spare Parts</option>
+          <option value="Hydraulic & Mechanical Parts">Hydraulic &amp; Mechanical Parts</option>
+          <option value="Fluida & Consumable">Fluida &amp; Consumable</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Keterangan (Opsional)</label>
+        <textarea id="keterangan_reg" placeholder="Spesifikasi, merk, dll." maxlength="500"></textarea>
+      </div>
+
+      <div class="loading-text" id="loadingReg">Menyimpan data...</div>
+      <button class="btn btn-primary" id="btnSubmitReg" onclick="submitRegistrasi()">✅ Registrasi Tool Baru</button>
+      <button class="btn btn-ghost" onclick="location.href='index.html'">← Kembali ke Dashboard</button>
+
+      <div class="alert alert-success" id="successMsgReg"></div>
+      <div class="alert alert-error"   id="errorMsgReg"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ TAB ADJUSTMENT ══════════ -->
+  <div id="tab-adjustment" class="tab-content">
+
+    <div class="info-box">
+      <strong>📋 Petunjuk Adjustment</strong>
+      Gunakan untuk tambah/kurangi stok (procurement, stock opname, rusak/hilang). Bukan untuk peminjaman normal.
+    </div>
+
+    <!-- SCAN QR -->
+    <div class="card">
+      <h3>📷 Scan QR Code Tool</h3>
+      <div id="reader"></div>
+      <div class="scan-result" id="scanResult">Arahkan kamera ke QR Code tool</div>
+    </div>
+
+    <!-- CARI TOOL -->
+    <div class="card">
+      <h3>🔍 Cari Tool</h3>
+      <div class="form-group">
+        <label>Tool ID <span class="required">*</span></label>
+        <input type="text" id="tool_id_adj" placeholder="Scan QR atau ketik Tool ID (ex: TOOL001)" />
+        <button class="btn btn-blue" onclick="cariTool()">🔍 Cari Tool</button>
+      </div>
+      <div class="tool-info" id="toolInfo">
+        <h4>ℹ️ Informasi Tool</h4>
+        <div class="tool-info-grid">
+          <div class="tool-info-item">
+            <span class="tool-info-label">Tool ID</span>
+            <span class="tool-info-value" id="info_tool_id">-</span>
+          </div>
+          <div class="tool-info-item">
+            <span class="tool-info-label">Nama Tool</span>
+            <span class="tool-info-value" id="info_nama">-</span>
+          </div>
+          <div class="tool-info-item">
+            <span class="tool-info-label">Kategori</span>
+            <span class="tool-info-value" id="info_kategori">-</span>
+          </div>
+          <div class="tool-info-item">
+            <span class="tool-info-label">Lokasi</span>
+            <span class="tool-info-value" id="info_lokasi">-</span>
+          </div>
+        </div>
+        <div class="stok-display">
+          <span>Stok Saat Ini</span>
+          <span id="info_stok">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM ADJUSTMENT -->
+    <div id="formAdjCard" class="card" style="display:none;">
+      <h3>⚙️ Adjustment Stok</h3>
+
+      <label>Tipe Adjustment <span class="required">*</span></label>
+      <div class="adj-grid">
+        <div class="adj-btn add" onclick="setType('add')">
+          ➕ Tambah Stok
+          <small>Procurement / Retur</small>
+        </div>
+        <div class="adj-btn subtract" onclick="setType('subtract')">
+          ➖ Kurangi Stok
+          <small>Rusak / Hilang</small>
+        </div>
+      </div>
+      <input type="hidden" id="adj_type" />
+
+      <div class="form-group">
+        <label>Jumlah <span class="required">*</span></label>
+        <div class="qty-wrap">
+          <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+          <input type="number" id="jumlah_adj" value="1" min="1" max="9999" readonly />
+          <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+
+        <div class="form-group">
+          <label>Alasan Adjustment <span class="required">*</span></label>
+          <select id="alasan" required disabled style="opacity:0.45;cursor:not-allowed;">
+            <option value="">-- Pilih tipe adjustment dulu --</option>
+          </select>
+        </div>
+
+      <div class="form-group">
+        <label>Keterangan <span class="required">*</span></label>
+        <textarea id="keterangan_adj" placeholder="Detail adjustment (wajib untuk audit)"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Penanggung Jawab <span class="required">*</span></label>
+        <input type="text" id="penanggung_jawab" placeholder="Nama penanggung jawab" />
+      </div>
+
+      <div class="loading-text" id="loadingAdj">Menyimpan adjustment...</div>
+      <button class="btn btn-primary" id="btnSubmitAdj" onclick="submitAdjustment()">✅ Simpan Adjustment</button>
+    </div>
+
+    <button class="btn btn-ghost" style="margin-top:0;" onclick="location.href='index.html'">← Kembali ke Dashboard</button>
+
+    <div class="alert alert-success" id="successMsgAdj"></div>
+    <div class="alert alert-error"   id="errorMsgAdj"></div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+function showToast(msg, icon = '✅') {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn')[name === 'register' ? 0 : 1].classList.add('active');
+  if (name === 'adjustment' && !html5QrCode) initScanner();
+}
+
+// ── REGISTRASI ──
+function getNextToolId() {
+  fetch('api_get_next_id.php').then(r => r.json()).then(data => {
+    if (data.success) {
+      document.getElementById('suggestId').innerHTML = `💡 ID berikutnya: <strong>${data.next_id}</strong>`;
+      const f = document.getElementById('tool_id_reg');
+      if (!f.value) f.value = data.next_id;
+    }
+  }).catch(() => { document.getElementById('suggestId').textContent = '⚠️ Error loading ID'; });
+}
+
+function submitRegistrasi() {
+  const btn = document.getElementById('btnSubmitReg');
+  const ld  = document.getElementById('loadingReg');
+
+  const formData = {
+    tool_id:   document.getElementById('tool_id_reg').value.trim().toUpperCase(),
+    nama_tool: document.getElementById('nama_tool').value.trim(),
+    stok:      parseInt(document.getElementById('stok').value),
+    lokasi:    document.getElementById('lokasi').value.trim(),
+    kategori:  document.getElementById('kategori').value,
+    keterangan: document.getElementById('keterangan_reg').value.trim()
+  };
+
+  if (!formData.tool_id || !formData.nama_tool || isNaN(formData.stok) || !formData.lokasi || !formData.kategori) {
+    showAlert('reg', 'error', 'Semua field wajib diisi!'); return;
+  }
+
+  btn.disabled = true; ld.style.display = 'block';
+
+  fetch('api_register_tool.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(formData)
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.disabled = false; ld.style.display = 'none';
+    if (data.success) {
+      showAlert('reg', 'success',
+        `✅ <strong>Tool "${formData.nama_tool}" berhasil diregistrasi!</strong><br>` +
+        `Tool ID: <strong>${formData.tool_id}</strong> | Stok: <strong>${formData.stok}</strong><br><br>` +
+        `<a href="generate_qr.html?id=${formData.tool_id}&name=${encodeURIComponent(formData.nama_tool)}" target="_blank">🎯 Generate QR Code →</a>`
+      );
+      ['tool_id_reg','nama_tool','stok','lokasi','keterangan_reg'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('kategori').value = '';
+      setTimeout(getNextToolId, 500);
+    } else { showAlert('reg', 'error', data.message); }
+  })
+  .catch(err => { btn.disabled = false; ld.style.display = 'none'; showAlert('reg', 'error', err.message); });
+}
+
+document.getElementById('tool_id_reg').addEventListener('input', function() {
+  this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+});
+
+// ── ADJUSTMENT ──
+let currentTool = null;
+let html5QrCode = null;
+
+function initScanner() {
+  html5QrCode = new Html5Qrcode('reader');
+  Html5Qrcode.getCameras().then(cameras => {
+    if (!cameras?.length) { document.getElementById('scanResult').textContent = '❌ Kamera tidak tersedia'; return; }
+    let camId = cameras[0].id;
+    for (const c of cameras) { if (/back|rear|environment/i.test(c.label)) { camId = c.id; break; } }
+    html5QrCode.start(camId, { fps: 10, qrbox: { width: 250, height: 250 } },
+      decodedText => {
+        document.getElementById('tool_id_adj').value = decodedText.trim().toUpperCase();
+        const el = document.getElementById('scanResult');
+        el.innerHTML = `✅ <strong>Scan Berhasil:</strong> ${decodedText}`;
+        el.className = 'scan-result ok';
+        cariTool();
+      }, () => {}
+    );
+  }).catch(() => { document.getElementById('scanResult').textContent = '❌ Error kamera'; });
+}
+
+function cariTool() {
+  const toolId = document.getElementById('tool_id_adj').value.trim().toUpperCase();
+  if (!toolId) { showAlert('adj', 'error', 'Tool ID wajib diisi!'); return; }
+  document.getElementById('toolInfo').style.display = 'none';
+  document.getElementById('formAdjCard').style.display = 'none';
+
+  fetch(`api_get_tool.php?tool_id=${encodeURIComponent(toolId)}`).then(r => r.json()).then(data => {
+    if (data.success) {
+      currentTool = data.data;
+      document.getElementById('info_tool_id').textContent = currentTool.tool_id;
+      document.getElementById('info_nama').textContent    = currentTool.nama_tool;
+      document.getElementById('info_kategori').textContent = currentTool.kategori || '-';
+      document.getElementById('info_lokasi').textContent  = currentTool.lokasi || '-';
+      document.getElementById('info_stok').textContent    = currentTool.stok;
+      document.getElementById('toolInfo').style.display   = 'block';
+      document.getElementById('formAdjCard').style.display = 'block';
+      document.getElementById('jumlah_adj').value = 1;
+      document.querySelectorAll('.adj-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('adj_type').value = '';
+    } else {
+      currentTool = null;
+      showAlert('adj', 'error', data.message || 'Tool tidak ditemukan');
+    }
+  }).catch(err => showAlert('adj', 'error', err.message));
+}
+
+// Pilihan alasan per tipe
+const alasanOptions = {
+  add: [
+    { value: 'Procurement',  label: 'Procurement / Pembelian Baru' },
+    { value: 'Stock Opname', label: 'Stock Opname / Koreksi Stok'  },
+    { value: 'Return',       label: 'Return dari Project'           },
+    { value: 'Found',        label: 'Ditemukan Kembali'            }
+  ],
+  subtract: [
+    { value: 'Damaged',            label: 'Rusak / Tidak Layak Pakai' },
+    { value: 'Deliver',            label: 'Deliver ke Project' },
+    { value: 'Lost',               label: 'Hilang'                    },
+    { value: 'Disposed',           label: 'Disposal / Dibuang'        },
+    { value: 'Stolen',             label: 'Dicuri'                    },
+    { value: 'Stock Opname Minus', label: 'Stock Opname (Minus)'      }
+  ]
+};
+
+function setType(type) {
+  document.getElementById('adj_type').value = type;
+ 
+  // Highlight tombol aktif
+  document.querySelectorAll('.adj-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector('.adj-btn.' + type).classList.add('active');
+ 
+  // Update pilihan alasan sesuai tipe yang dipilih
+  const sel = document.getElementById('alasan');
+  sel.disabled = false;
+  sel.style.opacity = '1';
+  sel.style.cursor  = 'pointer';
+  sel.innerHTML = '<option value="">-- Pilih Alasan --</option>' +
+    alasanOptions[type].map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+}
+
+function changeQty(delta) {
+  const el = document.getElementById('jumlah_adj');
+  let v = parseInt(el.value) + delta;
+  el.value = Math.min(9999, Math.max(1, v));
+}
+
+function submitAdjustment() {
+  if (!currentTool) { showAlert('adj', 'error', 'Pilih tool terlebih dahulu!'); return; }
+
+  const adjType = document.getElementById('adj_type').value;
+  const jumlah  = parseInt(document.getElementById('jumlah_adj').value);
+  const alasan  = document.getElementById('alasan').value;
+  const ket     = document.getElementById('keterangan_adj').value.trim();
+  const pj      = document.getElementById('penanggung_jawab').value.trim();
+
+  if (!adjType) { showAlert('adj', 'error', 'Pilih tipe adjustment'); return; }
+  if (!alasan)  { showAlert('adj', 'error', 'Pilih alasan adjustment'); return; }
+  if (!ket)     { showAlert('adj', 'error', 'Keterangan wajib diisi'); return; }
+  if (!pj)      { showAlert('adj', 'error', 'Penanggung jawab wajib diisi'); return; }
+  if (adjType === 'subtract' && jumlah > currentTool.stok) {
+    showAlert('adj', 'error', `Tidak bisa kurangi ${jumlah}. Stok hanya ${currentTool.stok}`); return;
+  }
+
+  const btn = document.getElementById('btnSubmitAdj');
+  const ld  = document.getElementById('loadingAdj');
+  btn.disabled = true; ld.style.display = 'block';
+
+  fetch('api_adjust_stock.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tool_id: currentTool.tool_id, type: adjType, jumlah, alasan, keterangan: ket, penanggung_jawab: pj })
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.disabled = false; ld.style.display = 'none';
+    if (data.success) {
+      const sym = adjType === 'add' ? '+' : '-';
+      showAlert('adj', 'success',
+        `✅ <strong>Adjustment Berhasil!</strong><br>` +
+        `Tool: <strong>${currentTool.nama_tool}</strong> | Perubahan: <strong>${sym}${jumlah}</strong> | Stok Baru: <strong>${data.data.stok_baru}</strong>`
+      );
+      currentTool.stok = data.data.stok_baru;
+      document.getElementById('info_stok').textContent = data.data.stok_baru;
+      ['keterangan_adj','penanggung_jawab'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('alasan').value = '';
+      document.getElementById('jumlah_adj').value = 1;
+      document.getElementById('adj_type').value = '';
+      document.querySelectorAll('.adj-btn').forEach(b => b.classList.remove('active'));
+    } else { showAlert('adj', 'error', data.message); }
+  })
+  .catch(err => { btn.disabled = false; ld.style.display = 'none'; showAlert('adj', 'error', err.message); });
+}
+
+document.getElementById('tool_id_adj').addEventListener('input', function() {
+  this.value = this.value.toUpperCase();
+});
+
+// ── ALERTS ──
+function showAlert(tab, type, msg) {
+  const s = document.getElementById('successMsg' + (tab==='reg'?'Reg':'Adj'));
+  const e = document.getElementById('errorMsg'   + (tab==='reg'?'Reg':'Adj'));
+  if (type === 'success') { s.innerHTML = msg; s.style.display = 'block'; e.style.display = 'none'; setTimeout(()=> s.style.display='none', 15000); }
+  else                    { e.innerHTML = '❌ ' + msg; e.style.display = 'block'; s.style.display = 'none'; setTimeout(()=> e.style.display='none', 8000); }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.addEventListener('load', getNextToolId);
+</script>
+</body>
+</html>

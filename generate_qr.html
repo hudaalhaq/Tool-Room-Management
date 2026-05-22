@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator - Tool Room</title>
+  <link rel="icon" type="image/png" href="ptaldzama_logo.jpg">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --card:     #22263a;
+      --border:   #2e3350;
+      --accent:   #4f8ef7;
+      --accent2:  #7c3aed;
+      --green:    #22c55e;
+      --yellow:   #f59e0b;
+      --red:      #ef4444;
+      --text:     #e8eaf6;
+      --muted:    #7b82a8;
+      --radius:   12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header img { height: 38px; }
+    header h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text);
+    }
+    header h1 span { color: var(--accent); }
+
+    /* ── LAYOUT ── */
+    .wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* ── CONTROL PANEL ── */
+    .control-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+    }
+
+    .ctrl-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ctrl-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .ctrl-group input,
+    .ctrl-group select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 9px 12px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      min-width: 160px;
+      transition: border 0.2s;
+    }
+    .ctrl-group input:focus,
+    .ctrl-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .ctrl-group select option { background: var(--card); }
+
+    .ctrl-group.grow { flex: 1; min-width: 200px; }
+    .ctrl-group.grow input { width: 100%; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: opacity 0.2s, transform 0.15s;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary   { background: var(--accent);  color: #fff; }
+    .btn-success   { background: var(--green);   color: #fff; }
+    .btn-warning   { background: var(--yellow);  color: #000; }
+    .btn-danger    { background: var(--red);     color: #fff; }
+    .btn-ghost     { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+    .btn:disabled  { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .stat-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stat-chip strong { color: var(--accent); font-size: 16px; }
+
+    /* ── PROGRESS ── */
+    .progress-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .progress-bar-bg {
+      background: var(--card);
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+
+
+    /* ── GRID ── */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .section-header h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .action-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .qr-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: pointer;
+    }
+    .qr-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .qr-card.selected {
+      border-color: var(--accent);
+      background: #1e2540;
+    }
+    .qr-card .qr-box {
+      background: #fff;
+      padding: 8px;
+      border-radius: 6px;
+      width: 130px;
+      height: 130px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-card .tool-id {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+    }
+    .qr-card .tool-name {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.4;
+      max-width: 170px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .qr-card .card-actions {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+    }
+    .qr-card .card-actions .btn {
+      flex: 1;
+      justify-content: center;
+      padding: 7px 8px;
+      font-size: 12px;
+    }
+
+    /* ── PLACEHOLDER / LOADING ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .skeleton-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      height: 220px;
+      overflow: hidden;
+      position: relative;
+    }
+    .skeleton-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* ── PRINT STYLES ── */
+    @media print {
+      header, .control-panel, .stats-bar, .progress-wrap,
+      .section-header .action-row, .card-actions { display: none !important; }
+      body { background: white; color: black; }
+      .qr-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+      .qr-card { border: 1px solid #ccc; break-inside: avoid; }
+      .qr-card .tool-id { color: #1a56d6; }
+      .qr-card .tool-name { color: #555; }
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 999;
+      max-width: 320px;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── SELECT ALL CHECKBOX ── */
+    .sel-all-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .sel-all-wrap input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; }
+
+    @media (max-width: 600px) {
+      .control-panel { flex-direction: column; }
+      .ctrl-group input, .ctrl-group select { min-width: unset; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="ptaldzama_logo.png" alt="Logo" onerror="this.src='ptaldzama_logo.jpg'">
+  <h1>Tool Room <span>QR</span> Generator</h1>
+</header>
+
+<div class="wrapper">
+
+
+
+  <!-- ── CONTROL PANEL ── -->
+  <div class="control-panel">
+    <div class="ctrl-group">
+      <label>Filter Kategori</label>
+      <select id="filterKat" onchange="applyFilter()">
+        <option value="">Semua Kategori</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>Filter Lokasi</label>
+      <select id="filterLok" onchange="applyFilter()">
+        <option value="">Semua Lokasi</option>
+      </select>
+    </div>
+    <div class="ctrl-group grow">
+      <label>Cari Nama / ID</label>
+      <div style="display:flex;gap:8px;flex:1;">
+        <input type="text" id="searchInput" placeholder="Ketik nama atau Tool ID... (Enter untuk cari)"
+          onkeydown="if(event.key==='Enter') triggerSearch()"
+          style="flex:1;">
+        <button class="btn btn-primary" onclick="triggerSearch()"
+          style="width:auto;padding:9px 16px;margin:0;white-space:nowrap;">
+          🔍 Cari
+        </button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="loadAndGenerate()">
+      ⚡ Load & Generate Semua
+    </button>
+    <button class="btn btn-ghost" onclick="resetFilter()">↺ Reset Filter</button>
+  </div>
+
+  <!-- ── PROGRESS ── -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-label">
+      <span id="progressText">Memuat data...</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- ── STATS ── -->
+  <div class="stats-bar" id="statsBar" style="display:none;">
+    <div class="stat-chip">📦 Total: <strong id="statTotal">0</strong></div>
+    <div class="stat-chip">✅ Ditampilkan: <strong id="statShown">0</strong></div>
+    <div class="stat-chip">☑️ Dipilih: <strong id="statSelected">0</strong></div>
+  </div>
+
+  <!-- ── GRID SECTION ── -->
+  <div id="gridSection" style="display:none;">
+    <div class="section-header">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <h2>📋 Semua QR Code</h2>
+        <label class="sel-all-wrap">
+          <input type="checkbox" id="checkAll" onchange="toggleSelectAll(this.checked)"> Pilih Semua
+        </label>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-success" id="btnDownloadSelected" onclick="downloadSelected()" disabled>
+          📥 Download Dipilih
+        </button>
+        <button class="btn btn-warning" onclick="downloadAll()">
+          📦 Download Semua
+        </button>
+        <button class="btn btn-ghost" onclick="window.print()">
+          🖨️ Print
+        </button>
+      </div>
+    </div>
+    <div class="qr-grid" id="qrGrid"></div>
+  </div>
+
+  <!-- ── EMPTY ── -->
+  <div class="empty-state" id="emptyState">
+    <div class="icon">⚡</div>
+    <p>Klik <strong>Load & Generate Semua</strong> untuk auto-generate QR seluruh tool dari database</p>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── Globals ──
+let allTools     = [];
+let filteredTools = [];
+let qrInstances  = {}; // tool_id -> canvas element
+let selectedIds  = new Set();
+
+// ── Toast ──
+function showToast(msg, icon = '✅') {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── LOAD & GENERATE ALL ──
+async function loadAndGenerate() {
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('gridSection').style.display = 'none';
+  document.getElementById('statsBar').style.display = 'none';
+
+  // Show progress
+  const pw = document.getElementById('progressWrap');
+  pw.style.display = 'block';
+  setProgress(0, 'Mengambil data dari database...');
+
+  try {
+    const res  = await fetch('api_dashboard.php');
+    const data = await res.json();
+
+    if (!data.success || !data.data.length) {
+      throw new Error('Tidak ada data tool dari server');
+    }
+
+    allTools = data.data;
+    populateFilters(allTools);
+    applyFilter(true); // true = trigger render
+
+  } catch(e) {
+    pw.style.display = 'none';
+    showToast('❌ Gagal: ' + e.message, '❌');
+    document.getElementById('emptyState').style.display = 'block';
+  }
+}
+
+// ── FILTER ──
+function populateFilters(data) {
+  const kats = [...new Set(data.map(t => t.kategori).filter(Boolean))].sort();
+  const loks = [...new Set(data.map(t => t.lokasi).filter(Boolean))].sort();
+
+  const sk = document.getElementById('filterKat');
+  const sl = document.getElementById('filterLok');
+
+  sk.innerHTML = '<option value="">Semua Kategori</option>' +
+    kats.map(k => `<option value="${k}">${k}</option>`).join('');
+  sl.innerHTML = '<option value="">Semua Lokasi</option>' +
+    loks.map(l => `<option value="${l}">${l}</option>`).join('');
+}
+
+function applyFilter(triggerRender = false) {
+  if (!allTools.length) return;
+
+  const kat    = document.getElementById('filterKat').value;
+  const lok    = document.getElementById('filterLok').value;
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+
+  filteredTools = allTools.filter(t =>
+    (!kat    || t.kategori === kat) &&
+    (!lok    || t.lokasi   === lok) &&
+    (!search || t.tool_id.toLowerCase().includes(search) || t.nama_tool.toLowerCase().includes(search))
+  );
+
+  if (triggerRender || document.getElementById('gridSection').style.display !== 'none') {
+    renderGrid(filteredTools);
+  }
+}
+
+function resetFilter() {
+  document.getElementById('filterKat').value    = '';
+  document.getElementById('filterLok').value    = '';
+  document.getElementById('searchInput').value  = '';
+  applyFilter(true);
+}
+
+function triggerSearch() {
+  // Hanya jalankan filter jika sudah ada data (sudah di-load)
+  if (!allTools.length) {
+    showToast('Klik "Load & Generate Semua" terlebih dahulu', '⚠️');
+    return;
+  }
+  applyFilter(true);
+}
+
+// ── RENDER GRID ──
+async function renderGrid(tools) {
+  qrInstances = {};
+  selectedIds.clear();
+  updateSelectedCount();
+
+  const grid = document.getElementById('qrGrid');
+  grid.innerHTML = '';
+
+  const pw = document.getElementById('progressWrap');
+  pw.style.display = 'block';
+
+  const total = tools.length;
+
+  for (let i = 0; i < tools.length; i++) {
+    const tool = tools[i];
+    setProgress(Math.round((i / total) * 100), `Generating ${tool.tool_id}... (${i+1}/${total})`);
+
+    // Build card fully using DOM API (avoid innerHTML+= which destroys child refs)
+    const card = document.createElement('div');
+    card.className = 'qr-card';
+    card.id = `card-${tool.tool_id}`;
+    card.onclick = (e) => {
+      if (e.target.closest('.card-actions')) return;
+      toggleSelect(tool.tool_id);
+    };
+
+    const qrBox = document.createElement('div');
+    qrBox.className = 'qr-box';
+    qrBox.id = `qr-${tool.tool_id}`;
+
+    const toolIdEl = document.createElement('div');
+    toolIdEl.className = 'tool-id';
+    toolIdEl.textContent = tool.tool_id;
+
+    const toolNameEl = document.createElement('div');
+    toolNameEl.className = 'tool-name';
+    toolNameEl.textContent = tool.nama_tool;
+
+    const actionsEl = document.createElement('div');
+    actionsEl.className = 'card-actions';
+    actionsEl.innerHTML = `
+      <button class="btn btn-success" onclick="downloadOne('${tool.tool_id}')">📥</button>
+      <button class="btn btn-ghost"   onclick="copyId('${tool.tool_id}')">📋</button>
+    `;
+
+    card.appendChild(qrBox);
+    card.appendChild(toolIdEl);
+    card.appendChild(toolNameEl);
+    card.appendChild(actionsEl);
+
+    // Append to DOM FIRST — QRCodeJS needs element in DOM to render
+    grid.appendChild(card);
+
+    // Now generate QR into the box (element is in DOM)
+    await generateQRInto(qrBox, tool.tool_id);
+    qrInstances[tool.tool_id] = qrBox.querySelector('canvas') || qrBox.querySelector('img');
+
+    // Yield to browser every 10 items
+    if (i % 10 === 9) await sleep(0);
+  }
+
+  setProgress(100, 'Selesai!');
+  await sleep(600);
+  pw.style.display = 'none';
+
+  document.getElementById('gridSection').style.display = 'block';
+  document.getElementById('statsBar').style.display = 'flex';
+  document.getElementById('statTotal').textContent = allTools.length;
+  document.getElementById('statShown').textContent = tools.length;
+  document.getElementById('checkAll').checked = false;
+
+  showToast(`${tools.length} QR Code berhasil di-generate`);
+}
+
+function generateQRInto(container, text) {
+  return new Promise(resolve => {
+    container.innerHTML = '';
+
+    new QRCode(container, {
+      text: text,
+      width: 114,
+      height: 114,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    // Poll until canvas actually has pixel data (fixes blank QR bug)
+    let tries = 0;
+    const check = () => {
+      const canvas = container.querySelector('canvas');
+      const img    = container.querySelector('img');
+      if (canvas && canvas.width > 0) return resolve();
+      if (img && img.src && img.src !== window.location.href && img.complete) return resolve();
+      if (++tries < 50) setTimeout(check, 10);
+      else resolve();
+    };
+    setTimeout(check, 10);
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setProgress(pct, label) {
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = label;
+  document.getElementById('progressPct').textContent  = pct + '%';
+}
+
+// ── SELECTION ──
+function toggleSelect(toolId) {
+  const card = document.getElementById(`card-${toolId}`);
+  if (selectedIds.has(toolId)) {
+    selectedIds.delete(toolId);
+    card.classList.remove('selected');
+  } else {
+    selectedIds.add(toolId);
+    card.classList.add('selected');
+  }
+  updateSelectedCount();
+}
+
+function toggleSelectAll(checked) {
+  filteredTools.forEach(t => {
+    const card = document.getElementById(`card-${t.tool_id}`);
+    if (!card) return;
+    if (checked) { selectedIds.add(t.tool_id); card.classList.add('selected'); }
+    else         { selectedIds.delete(t.tool_id); card.classList.remove('selected'); }
+  });
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  document.getElementById('statSelected').textContent = selectedIds.size;
+  document.getElementById('btnDownloadSelected').disabled = selectedIds.size === 0;
+}
+
+// ── DOWNLOAD ──
+function downloadOne(toolId) {
+  const canvas = qrInstances[toolId];
+  if (!canvas) return showToast('QR belum siap', '⚠️');
+  const a = document.createElement('a');
+  a.download = `QR_${toolId}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+function downloadSelected() {
+  if (!selectedIds.size) return;
+  showToast(`Download ${selectedIds.size} QR Code...`, '📥');
+  let delay = 0;
+  selectedIds.forEach(id => {
+    setTimeout(() => downloadOne(id), delay);
+    delay += 80;
+  });
+}
+
+function downloadAll() {
+  const ids = filteredTools.map(t => t.tool_id).filter(id => qrInstances[id]);
+  if (!ids.length) return showToast('Tidak ada QR untuk di-download', '⚠️');
+  showToast(`Download ${ids.length} QR Code...`, '📦');
+  ids.forEach((id, i) => setTimeout(() => downloadOne(id), i * 80));
+}
+
+function copyId(toolId) {
+  navigator.clipboard.writeText(toolId).then(() => showToast(`Disalin: ${toolId}`, '📋'));
+}
+
+
+
+// ── Enter / Escape key support ──
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.target.value = ''; triggerSearch(); }
+});
+</script>
+
+</body>
+</html>

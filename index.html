@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Tool Room – QR System</title>
+  <link rel="icon" type="image/png" href="ptaldzama_logo.jpg">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --bg:      #0f1117;
+      --surface: #1a1d27;
+      --card:    #22263a;
+      --border:  #2e3350;
+      --accent:  #4f8ef7;
+      --green:   #22c55e;
+      --yellow:  #f59e0b;
+      --red:     #ef4444;
+      --text:    #e8eaf6;
+      --muted:   #7b82a8;
+      --radius:  12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overflow-x: hidden; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header img { height: 38px; }
+    header h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    header h1 span { color: var(--accent); }
+    .nav-link {
+      margin-left: auto;
+      padding: 8px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .nav-link:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* LAYOUT */
+    .wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .col-left, .col-right { display: flex; flex-direction: column; gap: 20px; }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+    }
+    .card h3 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* FORM */
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+      margin-top: 12px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--accent); }
+    select option { background: var(--card); }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 11px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      width: 100%;
+      margin-top: 14px;
+    }
+    .btn:hover  { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-refresh {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 8px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 12px;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+    }
+    .btn-refresh:hover { background: rgba(34,197,94,0.22); }
+    .btn-reset {
+      padding: 8px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+    }
+    .btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* SCANNER */
+    #reader { width: 100%; border-radius: 8px; overflow: hidden; background: #000; }
+    #reader video { border-radius: 8px; }
+    #scanResult {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: var(--card);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    #scanResult.ok { border-left-color: var(--green); color: var(--green); }
+
+    /* FILTER BAR */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .filter-bar select {
+      flex: 1;
+      min-width: 120px;
+      margin-top: 0;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+    .filter-count { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+
+    /* TABLE */
+    .table-wrap {
+      max-height: 360px;
+      overflow-y: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      background: var(--card);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      padding: 10px 12px;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(79,142,247,0.04); }
+    .empty-td { text-align: center; color: var(--muted); padding: 24px !important; }
+
+    /* BADGES */
+    .badge {
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .b-aman     { background: rgba(34,197,94,0.15);  color: var(--green);  }
+    .b-terbatas { background: rgba(245,158,11,0.15); color: var(--yellow); }
+    .b-habis    { background: rgba(239,68,68,0.15);  color: var(--red);    }
+    .b-normal   { background: rgba(34,197,94,0.15);  color: var(--green);  }
+    .b-warning  { background: rgba(245,158,11,0.15); color: var(--yellow); }
+    .b-danger   { background: rgba(239,68,68,0.15);  color: var(--red);    }
+
+    /* MGMT BANNER */
+    .mgmt-banner {
+      background: linear-gradient(135deg, rgba(79,142,247,0.12), rgba(124,58,237,0.12));
+      border: 1px solid rgba(79,142,247,0.25);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .mgmt-banner h4 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .mgmt-banner p { font-size: 12px; color: var(--muted); }
+    .btn-go {
+      padding: 9px 18px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .btn-go:hover { opacity: 0.85; }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 999;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 860px) {
+      .wrapper {
+        grid-template-columns: 1fr;
+        padding: 12px;
+        gap: 14px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      /* HEADER */
+      header { padding: 10px 14px; gap: 10px; }
+      header img { height: 30px; }
+      header h1 { font-size: 1rem; }
+      .nav-link { padding: 6px 10px; font-size: 12px; }
+
+      /* WRAPPER */
+      .wrapper { padding: 10px; gap: 12px; }
+
+      /* CARD */
+      .card { padding: 14px 14px; }
+
+      /* PREVENT HORIZONTAL OVERFLOW */
+      body { overflow-x: hidden; }
+      .wrapper, .col-left, .col-right { max-width: 100%; min-width: 0; }
+
+      /* FILTER BAR — stack vertically on mobile */
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-bar select {
+        min-width: unset;
+        width: 100%;
+      }
+      .btn-reset { width: 100%; }
+
+      /* TABLE — allow horizontal scroll inside wrapper */
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-height: 300px;
+      }
+      table { min-width: 480px; }
+      th, td { padding: 8px 10px; font-size: 12px; white-space: nowrap; }
+
+      /* SCANNER — limit height on mobile */
+      #reader { max-height: 300px; }
+
+      /* MGMT BANNER */
+      .mgmt-banner { flex-direction: column; align-items: flex-start; }
+      .btn-go { width: 100%; text-align: center; }
+
+      /* BUTTON */
+      .btn { padding: 12px 14px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="ptaldzama_logo.png" alt="Logo" onerror="this.src='ptaldzama_logo.jpg'">
+  <h1>Tool Room <span>Management</span></h1>
+</header>
+
+<div class="wrapper">
+
+  <!-- ═══ KOLOM KIRI ═══ -->
+  <div class="col-left">
+
+    <!-- SCAN QR -->
+    <div class="card">
+      <h3>📷 Scan QR Code Tool</h3>
+      <div id="reader"></div>
+      <div id="scanResult">Arahkan kamera ke QR Code tool</div>
+    </div>
+
+    <!-- FORM TRANSAKSI -->
+    <div class="card">
+      <h3>🔄 Form Transaksi</h3>
+      <label>🏷️ Tool ID</label>
+      <input id="tool_id" placeholder="Scan QR atau ketik manual (ex: TOOL001)" />
+      <label>👤 Nama Operator</label>
+      <input id="operator" placeholder="Masukkan nama operator" />
+      <label>⚙️ Jenis Transaksi</label>
+      <select id="aksi">
+        <option value="OUT">📤 Ambil Tool (OUT)</option>
+        <option value="IN">📥 Kembalikan Tool (IN)</option>
+      </select>
+      <label>📝 Keterangan (Opsional)</label>
+      <input id="keterangan" placeholder="Catatan tambahan" />
+      <button class="btn btn-primary" onclick="submitTransaksi()">✅ Submit Transaksi</button>
+    </div>
+
+    <!-- TOOL MANAGEMENT -->
+    <div class="mgmt-banner">
+      <div>
+        <h4>🔧 Tool Management</h4>
+        <p>Registrasi tool baru &amp; adjustment stok</p>
+      </div>
+      <button class="btn-go" onclick="location.href='tool_management.html'">Buka →</button>
+    </div>
+
+  </div>
+
+  <!-- ═══ KOLOM KANAN ═══ -->
+  <div class="col-right">
+
+    <!-- DASHBOARD STOK -->
+    <div class="card">
+      <h3>📊 Dashboard Stok Tool</h3>
+      <button class="btn-refresh" onclick="loadStok()">🔄 Refresh</button>
+      <div class="filter-bar">
+        <select id="filterKategori" onchange="applyFilter()">
+          <option value="">📂 Semua Kategori</option>
+        </select>
+        <select id="filterLokasi" onchange="applyFilter()">
+          <option value="">📍 Semua Lokasi</option>
+        </select>
+        <select id="filterStatus" onchange="applyFilter()">
+          <option value="">🟢 Semua Status</option>
+          <option value="Aman">Aman</option>
+          <option value="Terbatas">Terbatas</option>
+          <option value="Habis">Habis</option>
+        </select>
+        <button class="btn-reset" onclick="resetFilter()">✖</button>
+      </div>
+      <div class="filter-count" id="filterCount"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Tool ID</th><th>Nama Tool</th><th>Kategori</th>
+            <th>Lokasi</th><th>Stok</th><th>Status</th>
+          </tr></thead>
+          <tbody id="dashStok">
+            <tr><td class="empty-td" colspan="6">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DASHBOARD DIPINJAM -->
+    <div class="card">
+      <h3>🧾 Tool Sedang Dipinjam</h3>
+      <button class="btn-refresh" onclick="loadDipinjam()">🔄 Refresh</button>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Tool ID</th><th>Nama Tool</th><th>Operator</th>
+            <th>Waktu Pinjam</th><th>Durasi</th>
+          </tr></thead>
+          <tbody id="dashPinjam">
+            <tr><td class="empty-td" colspan="5">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+function showToast(msg, icon = '✅') {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── QR SCANNER ──
+let html5QrCode = null;
+
+function onScanSuccess(decodedText) {
+  document.getElementById('tool_id').value = decodedText;
+  const el = document.getElementById('scanResult');
+  el.innerHTML = `✅ <strong>Scan Berhasil!</strong> Tool ID: <strong>${decodedText}</strong>`;
+  el.className = 'ok';
+  const beep = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGme77+ejUBELUKXh8LljHAU2jdXyz3opBSd6yO/dkUELEl+z6+imVRUMRp/h8r1sIAUsgs/y2Ik2Bxpmu+3mnlARDFCl4fC5Yx0FOJDS8s95KgUne8nu3JBACRNftOvno1QWDEae4PK9bR8GLYPPAAAABgCA');
+  beep.play().catch(()=>{});
+}
+
+function initQRScanner() {
+  html5QrCode = new Html5Qrcode('reader');
+  Html5Qrcode.getCameras().then(cameras => {
+    if (!cameras?.length) { document.getElementById('scanResult').textContent = '❌ Tidak ada kamera'; return; }
+    let camId = cameras[0].id;
+    for (const c of cameras) { if (/back|rear|environment/i.test(c.label)) { camId = c.id; break; } }
+    html5QrCode.start(camId, { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+      onScanSuccess, () => {}
+    ).catch(() => { document.getElementById('scanResult').textContent = '❌ Izinkan akses kamera'; });
+  }).catch(() => { document.getElementById('scanResult').textContent = '❌ Error kamera'; });
+}
+
+// ── TRANSAKSI ──
+function submitTransaksi() {
+  const toolId   = document.getElementById('tool_id').value.trim();
+  const operator = document.getElementById('operator').value.trim();
+  const aksi     = document.getElementById('aksi').value;
+  const ket      = document.getElementById('keterangan').value.trim();
+  if (!toolId)   { showToast('Tool ID wajib diisi!', '⚠️'); return; }
+  if (!operator) { showToast('Nama operator wajib diisi!', '⚠️'); return; }
+  if (!confirm(`Konfirmasi:\nTool ID : ${toolId}\nOperator: ${operator}\nAksi    : ${aksi === 'OUT' ? 'AMBIL TOOL' : 'KEMBALIKAN TOOL'}\n\nLanjutkan?`)) return;
+
+  fetch('api_tool.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tool_id: toolId, operator, aksi, keterangan: ket })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      showToast(data.message);
+      ['tool_id','operator','keterangan'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('scanResult').textContent = 'Arahkan kamera ke QR Code tool';
+      document.getElementById('scanResult').className = '';
+      loadStok(); loadDipinjam();
+    } else { showToast(data.message, '❌'); }
+  })
+  .catch(() => showToast('Kesalahan koneksi!', '❌'));
+}
+
+// ── STOK + FILTER ──
+let allStokData = [];
+
+function loadStok() {
+  document.getElementById('dashStok').innerHTML = '<tr><td class="empty-td" colspan="6">Memuat data...</td></tr>';
+  fetch('api_dashboard.php').then(r => r.json()).then(result => {
+    if (result.success && result.data.length) {
+      allStokData = result.data;
+      populateFilterOptions(allStokData);
+      applyFilter();
+    } else {
+      allStokData = [];
+      document.getElementById('dashStok').innerHTML = '<tr><td class="empty-td" colspan="6">Tidak ada data</td></tr>';
+    }
+  }).catch(() => {
+    document.getElementById('dashStok').innerHTML = '<tr><td class="empty-td" colspan="6" style="color:var(--red)">❌ Error</td></tr>';
+  });
+}
+
+function populateFilterOptions(data) {
+  const kats = [...new Set(data.map(t => t.kategori).filter(Boolean))].sort();
+  const loks = [...new Set(data.map(t => t.lokasi).filter(Boolean))].sort();
+  const sk = document.getElementById('filterKategori'), sl = document.getElementById('filterLokasi');
+  const ck = sk.value, cl = sl.value;
+  sk.innerHTML = '<option value="">📂 Semua Kategori</option>' + kats.map(k=>`<option value="${k}">${k}</option>`).join('');
+  sl.innerHTML = '<option value="">📍 Semua Lokasi</option>'   + loks.map(l=>`<option value="${l}">${l}</option>`).join('');
+  sk.value = ck; sl.value = cl;
+}
+
+function applyFilter() {
+  const kat = document.getElementById('filterKategori').value;
+  const lok = document.getElementById('filterLokasi').value;
+  const sts = document.getElementById('filterStatus').value;
+  const f   = allStokData.filter(t => (!kat||t.kategori===kat) && (!lok||t.lokasi===lok) && (!sts||t.status_stok===sts));
+  document.getElementById('filterCount').textContent =
+    (kat||lok||sts) ? `Menampilkan ${f.length} dari ${allStokData.length} tool` : `Total: ${allStokData.length} tool`;
+  if (!f.length) {
+    document.getElementById('dashStok').innerHTML = '<tr><td class="empty-td" colspan="6">Tidak ada data sesuai filter</td></tr>';
+    return;
+  }
+  document.getElementById('dashStok').innerHTML = f.map(t => {
+    const c = t.status_stok==='Aman' ? 'b-aman' : t.status_stok==='Terbatas' ? 'b-terbatas' : 'b-habis';
+    return `<tr>
+      <td><strong style="color:var(--accent)">${t.tool_id}</strong></td>
+      <td>${t.nama_tool}</td><td>${t.kategori||'-'}</td><td>${t.lokasi||'-'}</td>
+      <td><strong>${t.stok}</strong></td>
+      <td><span class="badge ${c}">${t.status_stok}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function resetFilter() {
+  ['filterKategori','filterLokasi','filterStatus'].forEach(id => document.getElementById(id).value = '');
+  applyFilter();
+}
+
+// ── DIPINJAM ──
+function loadDipinjam() {
+  document.getElementById('dashPinjam').innerHTML = '<tr><td class="empty-td" colspan="5">Memuat data...</td></tr>';
+  fetch('api_borrowed.php').then(r => r.json()).then(result => {
+    if (result.success && result.data.length) {
+      document.getElementById('dashPinjam').innerHTML = result.data.map(item => {
+        const dur = item.durasi_jam < 1 ? '< 1 jam'
+          : item.durasi_jam < 24 ? `${item.durasi_jam} jam`
+          : `${Math.floor(item.durasi_jam/24)} hari ${item.durasi_jam%24} jam`;
+        const c = item.status_durasi==='danger' ? 'b-danger' : item.status_durasi==='warning' ? 'b-warning' : 'b-normal';
+        return `<tr>
+          <td><strong style="color:var(--accent)">${item.tool_id}</strong></td>
+          <td>${item.nama_tool}</td><td>${item.operator}</td><td>${item.waktu}</td>
+          <td><span class="badge ${c}">${dur}</span></td>
+        </tr>`;
+      }).join('');
+    } else {
+      document.getElementById('dashPinjam').innerHTML = '<tr><td class="empty-td" colspan="5">✅ Semua tool sudah dikembalikan</td></tr>';
+    }
+  }).catch(() => {
+    document.getElementById('dashPinjam').innerHTML = '<tr><td class="empty-td" colspan="5" style="color:var(--red)">❌ Error</td></tr>';
+  });
+}
+
+window.addEventListener('load', () => {
+  initQRScanner();
+  loadStok();
+  loadDipinjam();
+  setInterval(() => { loadStok(); loadDipinjam(); }, 30000);
+});
+</script>
+</body>
+</html>
