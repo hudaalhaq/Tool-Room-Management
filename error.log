@@ -258,3 +258,18 @@
 [2026-05-18 14:49:40] Tool ID 'TOOL21' tidak ditemukan dalam database
 [2026-05-19 16:46:44] Stok Kunci Inggris 10" Inch habis (0). Tidak bisa dipinjam.
 [2026-05-19 16:47:22] Tidak ada peminjaman atas nama 'Aski' untuk tool ini. Pastikan nama operator sama persis dengan saat meminjam.
+[2026-05-22 13:36:33] Stok Kunci Inggris 10" Inch habis (0). Tidak bisa dipinjam.
+[2026-05-22 13:38:21] Tidak ada peminjaman atas nama 'qw' untuk tool ini. Pastikan nama operator sama persis dengan saat meminjam.
+[2026-05-22 13:38:50] Tidak ada peminjaman atas nama 'qw' untuk tool ini. Pastikan nama operator sama persis dengan saat meminjam.
+[2026-05-22 13:40:13] API Register Tool Error: Nama tool minimal 3 karakter
+[2026-05-22 13:40:19] API Register Tool Error: Kategori tidak valid. Pilih dari daftar yang tersedia.
+[2026-05-22 15:35:27] API Get Tool Error: Tool dengan ID 'TOOL999' tidak ditemukan dalam database
+[2026-05-22 15:35:30] API Get Tool Error: Tool dengan ID '' OR '1'='1' tidak ditemukan dalam database
+[2026-05-22 15:35:53] API Get Tool Error: Tool dengan ID 'TOOL999' tidak ditemukan dalam database
+[2026-05-22 15:35:56] API Get Tool Error: Tool dengan ID '' OR '1'='1' tidak ditemukan dalam database
+[2026-05-22 15:41:58] API Get Tool Error: Tool dengan ID 'Q' tidak ditemukan dalam database
+[2026-05-22 15:48:54] API Get Tool Error: Tool ID wajib diisi
+[2026-05-29 16:11:44] MySQL server has gone away
+[2026-07-13 16:33:42] No connection could be made because the target machine actively refused it
+[2026-07-13 16:33:42] No connection could be made because the target machine actively refused it
+[2026-07-13 16:34:33] Tool ID 'Tool ID	Nama Tool	Kategori	Lokasi	Stok	Status TOOL001' tidak ditemukan dalam database
